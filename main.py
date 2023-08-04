@@ -16,9 +16,9 @@ i2c = I2C(id=id, scl=scl, sda=sda, freq=400000)
 oled = sh1106.SH1106_I2C(width=128, height=64, i2c=i2c)
 oled.init_display()
 
-health = 1
-happiness = 1
-energy = 1
+health = 3
+happiness = 3
+energy = 3
 
 # load icons
 food = Icon('BigMeat.pbm', width=16, height=16, name="food")
@@ -27,8 +27,8 @@ game = Icon('Star.pbm', width=16, height=16, name="game")
 firstaid = Icon('firstaid.pbm', width=16, height=16, name="firstaid")
 toilet = Icon('toilet.pbm', width=16, height=16, name="toilet")
 heart = Icon('heart.pbm', width=16, height=16, name="heart")
-call = Icon('call.pbm', width=16, height=16, name="call")
-
+#call = Icon('call.pbm', width=16, height=16, name="call")
+toast_icon = Icon('toast.pbm', width=16, height=16, name="toast_icon")
 def clear():
     """ Clear the screen """
     oled.fill_rect(0,0,128,64,0)
@@ -48,30 +48,33 @@ def build_toolbar():
     toolbar.additem(firstaid)
     toolbar.additem(toilet)
     toolbar.additem(heart)
-    toolbar.additem(call)
+    toolbar.additem(toast_icon) #disambiguate to toastFull
     return toolbar
 
 tb = build_toolbar()
-#poopy = Animate(x=96,y=48, width=16, height=16, filename='poop')
-poopy = Animate(x=0, y=0, width=128, height=64, filename='beeAndPuppycat', animation_type='loop')
+poopy = Animate(x=96,y=48, width=16, height=16, filename='poop')
+logo = Animate(x=0, y=0, width=128, height=64, filename='beeAndPuppycat', animation_type='loop')
+bee = Animate(x=0, y=0, width=128, height=64, filename='beeFull', animation_type='loop')
+puppycat = Animate(x=0, y=0, width=128, height=64, filename='puppycatFull', animation_type='loop')
+toast = Animate(x=0, y=0, width=128, height=64, filename='toastFull', animation_type='loop')
 baby = Animate(x=48,y=16, width=48, height=48, filename='puppy_bounce', animation_type='bounce')
 eat = Animate(x=48,y=16, width=48, height=48, filename='eat')
 babyzzz = Animate(animation_type="loop", x=48,y=16, width=48, height=48, filename='baby_zzz')
-#death = Animate(animation_type='bounce', x=40,y=16, width=16, height=16, filename="skull")
+death = Animate(animation_type='bounce', x=40,y=16, width=16, height=16, filename="skull")
 go_potty = Animate(filename="potty", animation_type='bounce',x=64,y=16, width=48, height=48)
-#call_animate = Animate(filename='call_animate', width=16, height=16, x=108, y=0)
-#call_animate.speed = 'very slow'
+call_animate = Animate(filename='call_animate', width=16, height=16, x=108, y=0)
+call_animate.speed = 'very slow'
 
-button_a = Button(4)
+button_a = Button(2)
 button_b = Button(3)
-button_x = Button(2)
+button_x = Button(4)
 
 index = 0
 tb.select(index, oled)
 cancel = False
 feeding_time = False
 sleeping = False
-#death.set = False
+death.set = False
 
 # Set up Events
 energy_increase = Event(name="Increase Energy", sprite=heart, value=1)
@@ -85,14 +88,23 @@ heart_status = Event(name="Status", sprite=heart)
 
 baby.bounce()
 poopy.bounce()
-#death.loop(no=-1)
-#death.speed='slow'
+death.loop(no=-1)
+death.speed='slow'
 babyzzz.speed = 'very slow'
 go_potty.loop(no=1)
-poopy.loop(no=32)
+
 go_potty.set = True
 poopy.set = False
 go_potty.load()
+
+logo.splash(oled)
+clear()
+# bee.splash(oled)
+# clear()
+# puppycat.splash(oled)
+# clear()
+# toast.splash(oled)
+# clear()
 
 while True:
     if not cancel:
@@ -110,6 +122,7 @@ while True:
         tb.select(index, oled)
 
     if button_b.is_pressed:
+        print(tb.selected_item)
         if tb.selected_item == "food":
             feeding_time = True
             sleeping = False
@@ -151,6 +164,10 @@ while True:
             heart_status.message = "energy = " + str(energy)
             heart_status.popup(oled)
             clear()
+        if tb.selected_item == "toast_icon":
+            print("dannyboy")
+            toast.splash(oled)
+            clear()
         if tb.selected_item == "call":
             # call_animate.animate(oled)
             call_animate.set = False
@@ -189,28 +206,28 @@ while True:
                 baby.load()
                 baby.bounce(no=-1)
                 baby.set = True
-    #if (energy <= 1) and (happiness <= 1) and (health <=1):
-    #    death.set = True
-    #else:
-    #    death.set = False
+    if (energy <= 1) and (happiness <= 1) and (health <=1):
+        death.set = True
+    else:
+        death.set = False
 
-    #if (energy <= 1) or (happiness <= 1) or (health <= 1):
-    #    # set the toolbar call icon to flash
-    #    call_animate.set = True
-    #else:
-    #    call_animate.set = False
+    if (energy <= 1) or (happiness <= 1) or (health <= 1):
+        # set the toolbar call icon to flash
+        call_animate.set = True
+    else:
+        call_animate.set = False
 
     if poopy.set:
         poopy.load()
         poopy.animate(oled)
-    #if death.set:
-    #    death.animate(oled)
-    #tb.show(oled)  
+    if death.set:
+        death.animate(oled)
+    tb.show(oled)  
     if index == 6:
         tb.select(index, oled)
-    #else:
-    #    if call_animate.set:
-    #        call_animate.animate(oled)        
+    else:
+        if call_animate.set:
+            call_animate.animate(oled)        
          
     oled.show()
     sleep(0.05)
