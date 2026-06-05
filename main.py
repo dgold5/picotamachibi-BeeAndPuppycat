@@ -90,7 +90,7 @@ Icons = OrderedDict([
     ('heart', Icon('assets/heart.pbm', name = 'heart')),
     ('toast_icon', Icon('assets/toast.pbm', name = 'toast_icon')),
     ('bee_icon', Icon('assets/bee.pbm', name = 'bee_icon')),
-    ('cleavage', Icon('assets/cleavage.pbm', name ='cleavage'))
+    ('crab', Icon('assets/crab.pbm', name ='crab'))
 ])
 
 icon_count = len(Icons)
@@ -161,7 +161,7 @@ def pretty_patrick(oled):
     pan_height = 23
     pan = Icon('assets/pan.pbm', name ='pan', x=42, y=33, width=pan_width, height=pan_height)
     chicken = Icon('assets/chicken.pbm', name ='chicken', x=54, y=8, width=16, height=11)
-    chicken_butt = Icon('assets/chicken_butt.pbm', name ='chicken_butt', x=54, y=8, width=16, height=11)
+    chicken2 = Icon('assets/chicken2.pbm', name ='chicken2', x=54, y=8, width=16, height=11)
     egg_bg = Icon('assets/egg_bg.pbm', name='egg_bg', width=8, height=11)
     egg_fg = Icon('assets/egg_fg.pbm', name='egg_fg', width=8, height=11)
     egg_max_height = 32
@@ -223,7 +223,7 @@ def pretty_patrick(oled):
             chicken.show(oled)
         if water_in and fire_on:
             steam.animate(oled)
-            chicken_butt.show(oled)
+            chicken2.show(oled)
         if eggs_in:
             egg_bg.show(oled, 45, egg_1_y, key=1) #key = 1 ignores black in the source image
             egg_fg.show(oled, 45, egg_1_y, key=0)
@@ -695,7 +695,7 @@ while True:
         if (tb.selected_item == 'bee_icon'):
             bee.splash(oled, sleep_time = 1)
             clear()
-        if (tb.selected_item == 'cleavage'): 
+        if (tb.selected_item == 'crab'): 
             puppycat.splash(oled, sleep_time = 1)
             clear()
         if (tb.selected_item == 'race_track' and index >= 0): #TODO: find a better fix for this than checking index set after cancel
