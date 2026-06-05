@@ -5,7 +5,7 @@ for item in tracked_vars:
 
 try:
     with open('save.txt') as f:
-        for line in f:
+        for line in f: #TODO: handle blank lines, incomplete files, etc. w/grace
             if line.isspace():
                 pass
             elif line.startswith('inventory'):
@@ -22,8 +22,8 @@ def save_game():
         for item in tracked_vars:
             if item == 'inventory':
                 f.write(str(item) + ',' + ','.join(locals()[item]))
-                #print(str(item) + ',' + ','.join(locals()[item]))
+                print(str(item) + ',' + ','.join(locals()[item]))
             else:
                 f.write(str(item) + ' ' + str(locals()[item])+'\n')
-                #print(str(item) + ' ' + str(locals()[item])+'\n')
+                print(str(item) + ' ' + str(locals()[item])+'\n')
     

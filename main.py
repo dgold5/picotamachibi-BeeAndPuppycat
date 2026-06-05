@@ -20,6 +20,7 @@ BANNER_SLEEP = 0.75
 VOLUME = 1000
 SPACER = 2
 WIFI_PASS = 'nice try'
+DEBUG  = True
 
 #Globals
 #May be set by saved file, if not, initialize
@@ -30,17 +31,17 @@ energy = 3 if energy is None else int(energy)
 inventory = [] if inventory is None else inventory
 
 #Pin mappings & hardware config
-sda = Pin(0)
-scl = Pin(1)
-button_a = Button(2)
-button_b = Button(3)
-button_x = Button(4)
-buzzer_pin = Pin(5)
+sda = Pin(26)
+scl = Pin(27)
+button_a = Button(18)
+button_b = Button(17)
+button_x = Button(16)
+buzzer_pin = Pin(0)
 supported_screens = ['ssd1306', 'sh1106'];
-screen_used = supported_screens[0];
+screen_used = supported_screens[0];         # END USER!  You will need to change this to "...[1];" if you are using the sh1106
 
 #Connect to the screen
-i2c = I2C(id=0, scl=scl, sda=sda, freq=400000) #i2c port 0 => id=0
+i2c = I2C(id = 1, scl = scl, sda = sda, freq = 400000) #i2c port 0 => id=0
 
 if screen_used == supported_screens[0]:
     from ssd1306 import SSD1306_I2C
@@ -52,15 +53,16 @@ else:
     raise Exception('Unrecognized screen configured in main.py')
 
 oled.init_display()
-oled.rotate(False)
+oled.rotate(True)
 
 logo = Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/beeAndPuppycat', animation_type='loop')
+
 logo.splash(oled, sleep_time=0)
 
 #Set hunger and bathroom timers and callbacks
 def goPotty(var):
     baby.set = False
-    go_potty.loop(no=1)
+    go_potty.loop(no = 1)
     go_potty.set = True
     clear()
 
@@ -88,7 +90,7 @@ Icons = OrderedDict([
     ('heart', Icon('assets/heart.pbm', name = 'heart')),
     ('toast_icon', Icon('assets/toast.pbm', name = 'toast_icon')),
     ('bee_icon', Icon('assets/bee.pbm', name = 'bee_icon')),
-    ('crab', Icon('assets/crab.pbm', name ='crab'))
+    ('cleavage', Icon('assets/cleavage.pbm', name ='cleavage'))
 ])
 
 icon_count = len(Icons)
@@ -102,6 +104,7 @@ def build_toolbar():
     toolbar = Toolbar()
     toolbar.spacer = SPACER
     for item in Icons:
+        #if item != 'star': #Star added for use in dark heart game, not a selectable icon
         toolbar.additem(Icons[item])
     return toolbar        
         
@@ -110,8 +113,9 @@ krabs =           Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, fi
 bee =             Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/beeFull', animation_type='loop')
 puppycat =        Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/puppycatFull', animation_type='loop')
 toast =           Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/toastFull', animation_type='loop')
+starBunny =       Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/beeFull', animation_type='loop') #TODO: change beeFull to bunnyStar image
 narb =            Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/narb', animation_type='loop')
-puppyCatEat =     Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/puppyCatEat', animation_type='loop')
+puppyCatEat =     Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/puppyCatEat', animation_type='loop') #TODO: forgetting to add loop in init will cause animations to run without end, throw error
 eat =             Animate(x=48, y=SPRITE_SIZE, width=48, height=48, filename = 'assets/eat')
 baby =            Animate(x=48, y=SPRITE_SIZE, width=48, height=48, filename = 'assets/puppy_bounce', animation_type='bounce')
 babyzzz =         Animate(x=48, y=SPRITE_SIZE, width=48, height=48, filename = 'assets/puppy_cat_zzz', animation_type='loop')
@@ -157,7 +161,7 @@ def pretty_patrick(oled):
     pan_height = 23
     pan = Icon('assets/pan.pbm', name ='pan', x=42, y=33, width=pan_width, height=pan_height)
     chicken = Icon('assets/chicken.pbm', name ='chicken', x=54, y=8, width=16, height=11)
-    chicken_rev = Icon('assets/chicken_rev.pbm', name ='chicken_rev', x=54, y=8, width=16, height=11)
+    chicken_butt = Icon('assets/chicken_butt.pbm', name ='chicken_butt', x=54, y=8, width=16, height=11)
     egg_bg = Icon('assets/egg_bg.pbm', name='egg_bg', width=8, height=11)
     egg_fg = Icon('assets/egg_fg.pbm', name='egg_fg', width=8, height=11)
     egg_max_height = 32
@@ -182,7 +186,8 @@ def pretty_patrick(oled):
     steam.load()
     steam.loop(no=-1)
     steam.speed='slow'
-
+    
+    #TODO: implement vertical toolbar for water, fire, air icons, and cycle via inverting image
     while True:
         if button_a.is_pressed:
             water_in = not water_in
@@ -208,6 +213,7 @@ def pretty_patrick(oled):
         if egg_3_y >= egg_max_height or egg_3_y <= egg_min_height:
             egg_3_dir *= -1
         
+            
         #gap of 4 between each on right side
         water.show(oled, CANVAS_WIDTH - SPRITE_SIZE, 4)
         fire.show(oled, CANVAS_WIDTH - SPRITE_SIZE, 24)
@@ -217,13 +223,13 @@ def pretty_patrick(oled):
             chicken.show(oled)
         if water_in and fire_on:
             steam.animate(oled)
-            chicken_rev.show(oled)
+            chicken_butt.show(oled)
         if eggs_in:
             egg_bg.show(oled, 45, egg_1_y, key=1) #key = 1 ignores black in the source image
             egg_fg.show(oled, 45, egg_1_y, key=0)
-            egg_bg.show(oled, 55, egg_2_y, key=1)
+            egg_bg.show(oled, 55, egg_2_y, key=1) #key = 1 ignores black in the source image
             egg_fg.show(oled, 55, egg_2_y, key=0)
-            egg_bg.show(oled, 65, egg_3_y, key=1)
+            egg_bg.show(oled, 65, egg_3_y, key=1) #key = 1 ignores black in the source image
             egg_fg.show(oled, 65, egg_3_y, key=0)
         if fire_on:
             fire_under.animate(oled)
@@ -235,6 +241,13 @@ def pretty_patrick(oled):
 def race_track(oled):
     global that_legal_tender, star, dark_heart_event
     clear()
+#     speed = 15
+#     xpos = CANVAS_WIDTH + SPRITE_SIZE # Traveling to the right, things move to the left
+#     ypos = 0
+#     width = SPRITE_SIZE
+#     height = SPRITE_SIZE
+#     fbuf = framebuf.FrameBuffer(bytearray(width*height), width, height, framebuf.MONO_HLSB)
+#     fbuf.rect(0,0,8,8,1,True)
     star_field = Icon('assets/star_field.pbm', name = 'star_field', width = 128, height = 64)
     star_field_2 = Icon('assets/star_field.pbm', name = 'star_field_2', width = 128, height = 64, x=128)
     bg_wht = Icon('assets/race_track_bg_wht.pbm', name = 'bg_wht', width = 128, height = 64)
@@ -255,9 +268,9 @@ def race_track(oled):
     stripe_spacing = 6
     bee_x_pos = 49
     bee_lanes = [22, 36]
-    star_lanes = [33, 47] #11 off from bee lanes to account for different size in sprites
+    star_lanes = [33, 47] # 11 off from bee lanes to account for different size in sprites
     lane_index = 0
-    choice = int(random()*2)
+    choice = int(random()*1.9)
     star_index = choice
     poop_index = int(not choice)
     score = 0
@@ -288,7 +301,12 @@ def race_track(oled):
                 bee_x_pos = CANVAS_WIDTH - bee
         if button_a.is_held and button_b.is_held and button_x.is_held:
             clear()
+            #TODO: unload icons
             return
+#         xpos -= speed
+#         if xpos < -1 * width:
+#             xpos = CANVAS_WIDTH + SPRITE_SIZE
+#             ypos = int(random() * (CANVAS_HEIGHT - SPRITE_SIZE))
         pos += speed
         if pos < -128:
             pos = 0
@@ -303,25 +321,30 @@ def race_track(oled):
             stripe_pos = 0
             
         #check for colissions between beeCycle and other actors
+        #ideally more like
+        #bee.checkCollisions([actors_list])
         if star.x < bee_x_pos + bee_width and star.x + SPRITE_SIZE > bee_x_pos and lane_index == star_index:
             buzz.success()
             score+=1
-            choice = int(random()*2)
+            choice = int(random()*1.9)
             star_index = choice
             star.x = CANVAS_WIDTH
             poop_index = int(not choice)
         # Spawn in opposing rows
         if star.x <= -SPRITE_SIZE:
-            choice = int(random()*2)
+            choice = int(random()*1.9)
             star_index = choice
             star.x = CANVAS_WIDTH
-            poop_index = int(not choice)        
+            poop_index = int(not choice)
+        
         star.x -= stripe_speed
+
+
         
         star_field.show(oled, pos)
         star_field_2.show(oled, pos+128)
         bg_wht.show(oled, bg_pos, 0, key=0)
-        bg_blk.show(oled, bg_pos, 0, key=1) #split images into blk and white portions to achieve a transparency effect
+        bg_blk.show(oled, bg_pos, 0, key=1) #split images into blk and white portions to achieve a lazy transparency effect
         bg_2_wht.show(oled, bg_pos2, 0, key=0)
         bg_2_blk.show(oled, bg_pos2, 0, key=1)
         
@@ -329,7 +352,7 @@ def race_track(oled):
         for i in range(43):
             oled.hline(stripe_pos+stripe_spacing*i,56,4,1)
         star.show(oled, star.x, star_lanes[star_index])
-        bee_cycle_blk.show(oled, bee_x_pos, bee_lanes[lane_index], key=1)
+        bee_cycle_blk.show(oled, bee_x_pos, bee_lanes[lane_index], key=1) # Bulk of shape is black, so start by putting down the silloutte
         bee_cycle_wht.show(oled, bee_x_pos, bee_lanes[lane_index], key=0)
         showTextXY(oled, str(score))
         oled.show()
@@ -362,7 +385,7 @@ def menu(options):
         oled.show()
         sleep(0.05)
 
-def prompt():
+def prompt(): #TODO: pass this an existing string to load into entry
     """Allow text and numeric entries"""
     cursor = True
     entry = [' '] * 16
@@ -370,7 +393,7 @@ def prompt():
     entry_i = 0
     symbols_i = 0
     while True:
-        if button_b.is_held: #Holding b allows exit, disables independent a and x behavior
+        if button_b.is_held: # Holding b allows exit, disables indep a and x behavior
             buzz.b()
             if button_a.is_held and button_x.is_held:
                 buzz.x()
@@ -397,7 +420,7 @@ def prompt():
         clear()
         showTextXY(oled, 'Enter text below:', y = 24, x =0)
         showTextXY(oled, ''.join(entry).rstrip(), y=34, x=0)
-        if cursor:
+        if cursor: #lazy toggle cursor
             oled.hline(LETTER_WIDTH*entry_i, 43, LETTER_WIDTH, 1)
             cursor = False
         else:
@@ -536,7 +559,7 @@ feeding_time = False
 sleeping = False
 death.set = False
 
-#Set up Events
+# Set up Events
 energy_increase =   Event(name = 'Increase Energy', sprite = Icons['heart'])
 firstaid =          Event(name = 'First Aid', sprite = Icons['firstaid'])
 toilet =            Event(name = 'Toilet', sprite = Icons['toilet'])
@@ -545,22 +568,22 @@ dark_heart_event =  Event(name = 'Dark Heart', sprite = star)
 sleep_time =        Event(name = 'sleep time', sprite = Icons['lightbulb'])
 heart_status =      Event(name = 'Status', sprite = Icons['heart'])
 
-baby.bounce()
-poopy.bounce()
-puppyCatEat.loop(no=4)
+baby.bounce() #initialize the baby animation as a bounce type
+poopy.bounce() #initialize the poopy animation as a bounce type
+puppyCatEat.loop(no = 4)
 puppyCatEat.speed = 'slow'
-krabs.loop(no=4)
+krabs.loop(no = 4)
 krabs.speed = 'slow'
-death.loop(no=-1) #initialize the death animation as an endless loop
+death.loop(no = -1) #initialize the death animation as an endless loop type
 death.speed = 'slow'
 babyzzz.speed = 'very slow'
-go_potty.loop(no=1)
-dark_heart.loop(no=2)
+go_potty.loop(no = 1) #init the go_potty animation as a loop with one pass
+dark_heart.loop(no = 2)
 dark_heart.speed='slow'
 
-go_potty.set = True
-poopy.set = False
-go_potty.load()
+go_potty.set = True #set the flag to show the potty animation
+poopy.set = False #set the poopy as not visible
+go_potty.load() #load the resources for go_potty
 
 beeThemeSong = music(songs.beeTheme, looping = False, pin = buzzer_pin, tempo = 2, duty=VOLUME) #default tempo=3=slow; tempo=2 is usually right
 woeIsMeSong = music(songs.woeIsMe, looping = False, pin = buzzer_pin, tempo = 1, duty=VOLUME)
@@ -568,7 +591,7 @@ woeIsMeSong = music(songs.woeIsMe, looping = False, pin = buzzer_pin, tempo = 1,
 buzz = buzzer(pin=buzzer_pin, duty=VOLUME)
 
 logo.splash(oled, sleep_time=0)
-while beeThemeSong.tick():
+while beeThemeSong.tick(): #Play song until finished
     sleep(0.04)
 clear()
 
@@ -589,7 +612,7 @@ while True:
         tb.select(index, oled)
     if button_b.is_pressed:
         buzz.b()
-        if index == -1: 
+        if index == -1: #TODO: find a better fix for this than checking index set after cancel
             time = localtime()
             hour = time[3]
             ampm='AM'
@@ -672,13 +695,13 @@ while True:
         if (tb.selected_item == 'bee_icon'):
             bee.splash(oled, sleep_time = 1)
             clear()
-        if (tb.selected_item == 'crab'): 
+        if (tb.selected_item == 'cleavage'): 
             puppycat.splash(oled, sleep_time = 1)
             clear()
-        if (tb.selected_item == 'race_track'):
+        if (tb.selected_item == 'race_track' and index >= 0): #TODO: find a better fix for this than checking index set after cancel
             race_track(oled)
             clear()
-        if (tb.selected_item == 'pretty_patrick'):
+        if (tb.selected_item == 'pretty_patrick' and index >= 0): #TODO: find a better fix for this than checking index set after cancel
             pretty_patrick(oled)
             clear()
     if poopy.set:

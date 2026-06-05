@@ -183,6 +183,7 @@ class Toolbar():
 
     def show(self, oled, offset=0):
         oled.blit(self.data, offset,0)
+        # oled.show()
     
     def select(self, index, oled):
         """ Set the item in the index to inverted """
@@ -600,7 +601,6 @@ class Event():
         self.__timer_ms += 1
         if self.__timer_ms >= self.__timer:
             if self.__callback is not None:
-                print("poop check callback")
                 self.__callback
                 self.__timer = -1
                 self.__timer_ms = 0
