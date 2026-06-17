@@ -494,28 +494,47 @@ class Button():
     __pressed = False
     __pin = 0
     __button_down = False
+    __pull = Pin.PULL_DOWN
 
-    def __init__(self, pin:int):
+    def __init__(self, pin:int, pull):
         """ Sets up the button """
-        self.__pin = Pin(pin, Pin.IN, Pin.PULL_DOWN)
+        self.__pull = pull
+        if (pull == Pin.PULL_DOWN):
+            self.__pin = Pin(pin, Pin.IN, Pin.PULL_DOWN)
+        else:
+            self.__pin = Pin(pin, Pin.IN, Pin.PULL_UP)
         self.__pressed = False
+        
 
     @property
     def is_pressed(self)->bool:
         """ Returns the current state of the button """
-        if self.__pin.value() == 0:
-            self.__button_down = False
-            return False
-        if self.__pin.value() == 1:
-            if not self.__button_down:
-                # print("button pressed")
-                self.__button_down = True
-                return True
-            else:
+        if self.__pull == Pin.PULL_UP:
+            if self.__pin.value() == 1:
+                self.__button_down = False
                 return False
+            if self.__pin.value() == 0:
+                if not self.__button_down:
+                    self.__button_down = True
+                    return True
+                else:
+                    return False
+        elif self.__pull == Pin.PULL_DOWN:
+            if self.__pin.value() == 0:
+                self.__button_down = False
+                return False
+            if self.__pin.value() == 1:
+                if not self.__button_down:
+                    self.__button_down = True
+                    return True
+                else:
+                    return False
     @property
     def is_held(self)->bool:
-        return bool(self.__pin.value())
+        if self.__pull == Pin.PULL_UP:
+            return not(bool(self.__pin.value()))
+        elif self.__pull == Pin.PULL_DOWN:
+            return bool(self.__pin.value())
 
 class Event():
     """ Models events that can happen, with timers and pop up messages """
