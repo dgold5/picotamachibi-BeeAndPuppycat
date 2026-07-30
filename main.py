@@ -1,8 +1,21 @@
+#main.py# This file is run by default when a Pico is powered on.  You can edit it to make the Pico do all kinds of fun and useful things.
+#You can add comments to Python files by typing the "pound" or "hashtag" symbol followed by your text
+"""Multi-line
+comments
+look
+like
+this.
+With the three double quotation marks on both ends"""
+
+#Imports
+# Imports are how we tell Python which other tools and code we want to use.
 import ntpTime
 from time import sleep, localtime
-from icon import Animate, Icon, Toolbar, Button, Event
 from machine import I2C, Pin, PWM, Timer
 from collections import OrderedDict
+
+# The following imports are all defined by files present in the same directory as main.py.  You can explore how those parts work to get a deeper understanding.
+from icon import Animate, Icon, Toolbar, Button, Event
 from buzzer_music import music
 from random import random
 import framebuf
@@ -11,39 +24,54 @@ from buzz import buzzer
 from saved_games import *
 
 #Constants
+# Constants are values that do not change.  Conventionally all caps
 CANVAS_HEIGHT = 64
 CANVAS_WIDTH = 128
 SPRITE_SIZE = 16
 SPRITE_X_LIMIT = CANVAS_WIDTH-SPRITE_SIZE
 LETTER_WIDTH = 8 #"[Chars are] 8x8 pixels [changing not supported]" ~micropython framebuf docs
 BANNER_SLEEP = 0.75
-VOLUME = 1000
 SPACER = 2
-WIFI_PASS = 'nice try'
-DEBUG  = True
 
-#Globals
+
+# Globals
+# The following code is said to share "scope" with these global variables.
 #May be set by saved file, if not, initialize
 that_legal_tender = 500 if that_legal_tender is None else int(that_legal_tender)
 health = 3 if health is None else int(health)
 happiness = 3 if happiness is None else int(happiness)
 energy = 3 if energy is None else int(energy)
 inventory = [] if inventory is None else inventory
+wifi_pass ='Nice Try'
+volume = 1000 #of 2512
 
-#Pin mappings & hardware config
-sda = Pin(26)
-scl = Pin(27)
-button_a = Button(18)
-button_b = Button(17)
-button_x = Button(16)
-buzzer_pin = Pin(0)
-supported_screens = ['ssd1306', 'sh1106'];
-screen_used = supported_screens[0];         # END USER!  You will need to change this to "...[1];" if you are using the sh1106
 
-#Connect to the screen
-i2c = I2C(id = 1, scl = scl, sda = sda, freq = 400000) #i2c port 0 => id=0
 
-if screen_used == supported_screens[0]:
+# Pin mappings & hardware config
+# Buttons
+button_a = Button(7, Pin.PULL_UP)
+button_b = Button(11, Pin.PULL_UP)
+button_x = Button(15, Pin.PULL_UP)
+
+#Piezo buzzer
+buzzer_pin = Pin(19)
+
+#OLED        DOUBLE CHECK YOUR GND AND VCC CONNECTIONS!  They differ by manufacturer and may not match pictures in materials.
+sda = Pin(16)
+scl = Pin(17)
+
+#OLED hardware options
+supported_screens = ['ssd1306', 'sh1106']  #TODO: Untested with sh1106, but may be useful to others as a starting point for further development.
+screen_used = supported_screens[0]         #HEADS UP!  You will need to change this to "screen_used = supported_screens[1]" if you are using the sh1106
+
+
+# I2C is a communication protocol that allows devices to transfer info using just two wires, plus shared power connections.
+# In this project, I2C allows the Pico to send images and commands to the display and bring our pet to life!
+
+#Connect to the OLED screen
+i2c = I2C(id = 0, scl = scl, sda = sda, freq = 400000) #i2c port 0 => id=0
+
+if screen_used == supported_screens[0]:  # Create the right kind of oled display so our commands work correctly on each.
     from ssd1306 import SSD1306_I2C
     oled = SSD1306_I2C(width=CANVAS_WIDTH, height=CANVAS_HEIGHT, i2c=i2c)
 elif screen_used == supported_screens[1]:
@@ -51,6 +79,13 @@ elif screen_used == supported_screens[1]:
     oled = SH1106_I2C(width=CANVAS_WIDTH, height=CANVAS_HEIGHT, i2c=i2c)
 else:
     raise Exception('Unrecognized screen configured in main.py')
+
+
+
+DEBUG  = True #Shows debug messages on the Serial Monitor
+
+#TODO: Continue in-depth comments below
+#TODO: Additional code clean up passes
 
 oled.init_display()
 oled.rotate(True)
@@ -357,7 +392,7 @@ def race_track(oled):
         showTextXY(oled, str(score))
         oled.show()
         sleep(0.05)
-        clear()     
+        clear()
 
 def menu(options):
     """Present, allow scroll and selection of items"""
@@ -375,7 +410,8 @@ def menu(options):
             return
         if button_b.is_pressed:
             buzz.b()
-            options.remove(options[selected])
+            if len(options) != 0:
+                options.remove(options[selected])
         clear()
         for i in range(min(8,len(options))):
             colr = 1
@@ -513,7 +549,7 @@ def darkHeartGame():
         if button_b.is_pressed:
             buzz.b()
             krabs.load()
-            woeIsMeSong = music(songs.woeIsMe, looping = False, pin = buzzer_pin, tempo = 1, duty=VOLUME)
+            woeIsMeSong = music(songs.woeIsMe, looping = False, pin = buzzer_pin, tempo = 1, duty=volume)
             krabs.loop(no = 4)
             while woeIsMeSong.tick():
                 if not krabs.done:
@@ -585,16 +621,20 @@ go_potty.set = True #set the flag to show the potty animation
 poopy.set = False #set the poopy as not visible
 go_potty.load() #load the resources for go_potty
 
-beeThemeSong = music(songs.beeTheme, looping = False, pin = buzzer_pin, tempo = 2, duty=VOLUME) #default tempo=3=slow; tempo=2 is usually right
-woeIsMeSong = music(songs.woeIsMe, looping = False, pin = buzzer_pin, tempo = 1, duty=VOLUME)
+beeThemeSong = music(songs.beeTheme, looping = False, pin = buzzer_pin, tempo = 2, duty=volume) #default tempo=3=slow; tempo=2 is usually right
+woeIsMeSong = music(songs.woeIsMe, looping = False, pin = buzzer_pin, tempo = 1, duty=volume)
 
-buzz = buzzer(pin=buzzer_pin, duty=VOLUME)
+buzz = buzzer(pin=buzzer_pin, duty=volume)
 
+
+#Display the intro logo and play the startup song
 logo.splash(oled, sleep_time=0)
 while beeThemeSong.tick(): #Play song until finished
     sleep(0.04)
 clear()
 
+
+#main loop after everything else has been defined and established
 while True:
     if not cancel:
         tb.unselect(index, oled)
@@ -631,8 +671,8 @@ while True:
             menu(inventory)
         if tb.selected_item == 'heart_plus':
             result = prompt()
-            WIFI_PASS = result
-            connected = ntpTime.connect(WIFI_PASS)
+            wifi_pass = result
+            connected = ntpTime.connect(wifi_pass)
             if connected:
                 dark_heart_event.message = 'Connected'
                 dark_heart_event.popup(oled)
@@ -747,3 +787,4 @@ while True:
     tb.show(oled, offset)
     oled.show()
     sleep(0.05)
+
