@@ -9,7 +9,7 @@ With the three double quotation marks on both ends"""
 
 #Imports
 # Imports are how we tell Python which other tools and code we want to use.
-import ntpTime
+import sys, ntpTime
 from time import sleep, localtime
 from machine import I2C, Pin, PWM, Timer
 from collections import OrderedDict
@@ -71,9 +71,14 @@ screen_used = supported_screens[0]         #HEADS UP!  You will need to change t
 #Connect to the OLED screen
 i2c = I2C(id = 0, scl = scl, sda = sda, freq = 400000) #i2c port 0 => id=0
 
-if screen_used == supported_screens[0]:  # Create the right kind of oled display so our commands work correctly on each.
+if screen_used == supported_screens[0]:
     from ssd1306 import SSD1306_I2C
-    oled = SSD1306_I2C(width=CANVAS_WIDTH, height=CANVAS_HEIGHT, i2c=i2c)
+    try:
+        oled = SSD1306_I2C(width=CANVAS_WIDTH, height=CANVAS_HEIGHT, i2c=i2c)
+    except OSError as e:
+        msg = "OLED disconnected?"
+        print(msg)
+        sys.exit(msg)
 elif screen_used == supported_screens[1]:
     from sh1106 import SH1106_I2C
     oled = SH1106_I2C(width=CANVAS_WIDTH, height=CANVAS_HEIGHT, i2c=i2c)
