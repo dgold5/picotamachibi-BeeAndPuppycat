@@ -54,7 +54,7 @@ button_b = Button(11, Pin.PULL_UP)
 button_x = Button(15, Pin.PULL_UP)
 
 #Piezo buzzer
-buzzer_pin = Pin(19)
+buzzer_pin = Pin(20)
 
 #OLED        DOUBLE CHECK YOUR GND AND VCC CONNECTIONS!  They differ by manufacturer and may not match pictures in materials.
 sda = Pin(16)
@@ -93,7 +93,7 @@ DEBUG  = True #Shows debug messages on the Serial Monitor
 #TODO: Additional code clean up passes
 
 oled.init_display()
-oled.rotate(True)
+oled.rotate(True) #Change to False or True if your screen is upside down
 
 logo = Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/beeAndPuppycat', animation_type='loop')
 
