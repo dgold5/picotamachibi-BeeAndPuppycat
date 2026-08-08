@@ -93,7 +93,7 @@ DEBUG  = True #Shows debug messages on the Serial Monitor
 #TODO: Additional code clean up passes
 
 oled.init_display()
-oled.rotate(True) #Change to False or True if your screen is upside down
+oled.rotate(False) #Change to False or True if your screen is upside down
 
 logo = Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/beeAndPuppycat', animation_type='loop')
 
@@ -118,7 +118,7 @@ hunger_timer = Timer(mode=Timer.PERIODIC, period=oneHour, callback=getHungry)
 
 #Create Icons
 Icons = OrderedDict([
-    ('pretty_patrick', Icon('assets/pretty_patrick.pbm', name = 'pretty_patrick')),
+    #('pretty_patrick', Icon('assets/pretty_patrick.pbm', name = 'pretty_patrick')),
     ('race_track', Icon('assets/race_track.pbm', name = 'race_track')),
     ('food', Icon('assets/big_meat.pbm', name = 'food')),
     ('book', Icon('assets/book.pbm', name='book')),
@@ -746,9 +746,9 @@ while True:
         if (tb.selected_item == 'race_track' and index >= 0): #TODO: find a better fix for this than checking index set after cancel
             race_track(oled)
             clear()
-        if (tb.selected_item == 'pretty_patrick' and index >= 0): #TODO: find a better fix for this than checking index set after cancel
-            pretty_patrick(oled)
-            clear()
+   #     if (tb.selected_item == 'pretty_patrick' and index >= 0): #TODO: find a better fix for this than checking index set after cancel
+   #         pretty_patrick(oled)
+   #         clear()
     if poopy.set:
         poopy.load()
         poopy.animate(oled)        
@@ -792,4 +792,5 @@ while True:
     tb.show(oled, offset)
     oled.show()
     sleep(0.05)
+
 
