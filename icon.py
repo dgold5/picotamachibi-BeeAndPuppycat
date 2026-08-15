@@ -375,8 +375,8 @@ class Animate():
             self.forward()
             if self.__current_frame > self.frame_count:
                 self.__current_frame = 0
-                self.__loop_count -=1
-                if self.__loop_count == 0:
+                self.__loop_count -=1 #When loop() is called without a count specified, or with -1 passed, it will run until Stop is called.
+                if self.__loop_count == 0:  #-1 will become -2, then -3, and never pass through loop_count == 0, and so it will continue until Stop()
                     self.__done = True
             
         if self.__animation_type == "bouncing":
