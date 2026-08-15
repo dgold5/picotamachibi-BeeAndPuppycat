@@ -9,7 +9,6 @@ With the three double quotation marks on both ends"""
 
 #Imports
 # Imports are how we tell Python which other tools and code we want to use.
-
 import sys, ntpTime  #uses network time protocol (NTP) to ultimately set, then return the local time ase needed.  Assumes Mountain.
 from time import sleep, localtime
 from machine import I2C, Pin, PWM, Timer
@@ -115,18 +114,20 @@ def showTextXY(oled, message='', x=110, y=0, width=CANVAS_WIDTH, height=8, cente
     oled.blit(fbuf, x, y)
     
     
-beeThemeSong = music(songs.beeTheme, looping = False, pin = buzzer_pin, tempo = 2, duty=volume) #default tempo=3=slow; tempo=2 is usually right
-woeIsMeSong = music(songs.woeIsMe, looping = False, pin = buzzer_pin, tempo = 1, duty=volume)
+bee_theme_song = music(songs.bee_theme, looping = False, pin = buzzer_pin, tempo = 2, duty=volume) #default tempo=3=slow; tempo=2 is usually right
+woe_is_me_song = music(songs.woe_is_me, looping = False, pin = buzzer_pin, tempo = 1, duty=volume)
+rudolph_song = music(songs.rudolph_short, looping = False, pin = buzzer_pin, tempo = 2, duty=volume)
 
 PlayIntro = True #True by default, but during Dev, turning it False is nice
 
 
 if PlayIntro:
-    #Display the intro logo and play the startup song    
-    logo = Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/beeAndPuppycat') #default once through animation of the beeAndPuppycat bitmap stored under the assets folder
-    logo.splash(oled, sleep_time=0) #immediately draw to screen with no dealy after.  Music plays blocking anything else from being drawn until the music stops.
-    while beeThemeSong.tick(): #Play song until finished
+    #Display the intro startupImage and play the startup song    
+    startupImage = Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/startupImage') #default once through animation of the beeAndPuppycat bitmap stored under the assets folder
+    startupImage.splash(oled, sleep_time=0) #immediately draw to screen with no dealy after.  Music plays blocking anything else from being drawn until the music stops.
+    while bee_theme_song.tick(): #Play song until finished
         sleep(0.04)
+    clear()
 
 #Set hunger and bathroom timers and callbacks
 def goPotty(var):
@@ -147,7 +148,8 @@ hunger_timer = Timer(mode=Timer.PERIODIC, period=oneHour, callback=getHungry)
 
 #Create Icons
 Icons = OrderedDict([
-    ('food', Icon('assets/big_meat.pbm', name = 'food')), # (name in the dictionary, then an Icon given an image path and name to reference it by)
+    ('extra', Icon('assets/crab.pbm', name ='extra')),
+    ('food', Icon('assets/big_meat.pbm', name = 'food')), # (name in the dictionary, then an Icon) given an image path and name to reference it by
     ('lightbulb', Icon('assets/lightbulb.pbm', name = 'lightbulb')),
     ('toilet', Icon('assets/toilet.pbm', name = 'toilet')),
     ('race_track', Icon('assets/race_track.pbm', name = 'race_track')),
@@ -160,6 +162,7 @@ Icons = OrderedDict([
     ('crab', Icon('assets/crab.pbm', name ='crab'))
     #('heart_plus', Icon('assets/heart.pbm', name = 'heart_plus')),
     #('pretty_patrick', Icon('assets/pretty_patrick.pbm', name = 'pretty_patrick')),
+
 
 ])
 
@@ -181,13 +184,12 @@ krabs =           Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, fi
 bee =             Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/beeFull', animation_type='loop')
 puppycat =        Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/puppycatFull', animation_type='loop')
 toast =           Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/toastFull', animation_type='loop')
-starBunny =       Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/beeFull', animation_type='loop') #TODO: change beeFull to bunnyStar image
 narb =            Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/narb', animation_type='loop')
 puppyCatEat =     Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/puppyCatEat', animation_type='loop') #Calling loop() with no arg or -1 will cause it to run until Stop is called.
 eat =             Animate(x=48, y=SPRITE_SIZE, width=48, height=48, filename = 'assets/eat')
-baby =            Animate(x=48, y=SPRITE_SIZE, width=48, height=48, filename = 'assets/puppy_bounce', animation_type='bounce')
-babyzzz =         Animate(x=48, y=SPRITE_SIZE, width=48, height=48, filename = 'assets/puppy_cat_zzz', animation_type='loop')
-go_potty =        Animate(x=64, y=SPRITE_SIZE, width=48, height=48, filename = 'assets/puppy_cat_potty', animation_type='bounce')
+baby =            Animate(x=48, y=SPRITE_SIZE, width=48, height=48, filename = 'assets/e_pet_bounce', animation_type='bounce')
+babyzzz =         Animate(x=48, y=SPRITE_SIZE, width=48, height=48, filename = 'assets/e_pet_zzz', animation_type='loop')
+go_potty =        Animate(x=64, y=SPRITE_SIZE, width=48, height=48, filename = 'assets/e_pet_potty', animation_type='bounce')
 poopy =           Animate(x=96, y=48, width=SPRITE_SIZE, height=SPRITE_SIZE, filename='assets/poop')
 death =           Animate(x=40, y=SPRITE_SIZE, width=SPRITE_SIZE, height=SPRITE_SIZE, filename='assets/skull', animation_type='bounce')
 dark_heart =      Animate(x=40, y=0, width=48, height=64, filename='assets/dark_heart', animation_type='loop')
@@ -582,9 +584,9 @@ def darkHeartGame():
         if button_b.is_pressed:
             buzz.b()
             krabs.load()
-            woeIsMeSong = music(songs.woeIsMe, looping = False, pin = buzzer_pin, tempo = 1, duty=volume)#TODO: test if this initialization is needed, seems to be a repeat
+            woe_is_me_song.restart()
             krabs.loop(no = 4)
-            while woeIsMeSong.tick():
+            while woe_is_me_song.tick():
                 if not krabs.done:
                     krabs.animate(oled)
                     oled.show()
@@ -759,6 +761,12 @@ while True:
             clear()
         if (tb.selected_item == 'crab'): 
             puppycat.splash(oled, sleep_time = 1)
+            clear()
+        if (tb.selected_item == 'extra'):
+            rudolph_song.restart()
+            bee.splash(oled, sleep_time = 1)
+            while rudolph_song.tick(): #Play song until finished
+                sleep(0.04)
             clear()
         if (tb.selected_item == 'race_track' and index >= 0): #TODO: find a better fix for this than checking index set after cancel
             race_track(oled)
