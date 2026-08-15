@@ -9,7 +9,8 @@ With the three double quotation marks on both ends"""
 
 #Imports
 # Imports are how we tell Python which other tools and code we want to use.
-import sys, ntpTime
+
+import sys, ntpTime  #uses network time protocol (NTP) to ultimately set, then return the local time ase needed.  Assumes Mountain.
 from time import sleep, localtime
 from machine import I2C, Pin, PWM, Timer
 from collections import OrderedDict
@@ -43,7 +44,7 @@ happiness = 3 if happiness is None else int(happiness)
 energy = 3 if energy is None else int(energy)
 inventory = [] if inventory is None else inventory
 wifi_pass ='Nice Try'
-volume = 1000 #of 2512
+volume = 1000 #of 2512  #TODO: Add volume control functionality.  Currently, can change the value here then reupload.
 
 
 
@@ -71,7 +72,7 @@ screen_used = supported_screens[0]         #HEADS UP!  You will need to change t
 #Connect to the OLED screen
 i2c = I2C(id = 0, scl = scl, sda = sda, freq = 400000) #i2c port 0 => id=0
 
-if screen_used == supported_screens[0]:
+if screen_used == supported_screens[0]:  # Create the right kind of oled display so our commands work correctly on each.
     from ssd1306 import SSD1306_I2C
     try:
         oled = SSD1306_I2C(width=CANVAS_WIDTH, height=CANVAS_HEIGHT, i2c=i2c)
@@ -93,11 +94,43 @@ DEBUG  = True #Shows debug messages on the Serial Monitor
 #TODO: Additional code clean up passes
 
 oled.init_display()
-oled.rotate(False) #Change to False or True if your screen is upside down
+oled.rotate(True)  #Toggle this to True or False (capitalization matters here) if your screen appears upside down.
 
-logo = Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/beeAndPuppycat', animation_type='loop')
+def clear():
+    """ Clear the screen
+        Draws an empty rectangle over the canvas"""
+    oled.fill_rect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT,0)
 
-logo.splash(oled, sleep_time=0)
+def showTextXY(oled, message='', x=110, y=0, width=CANVAS_WIDTH, height=8, center=None, color=1):#TODO: probably better in Icon, or better still, a separate file altogether.
+    """Display text at co-ords"""
+    fbuf = framebuf.FrameBuffer(bytearray(width*height), width, height, framebuf.MONO_HLSB)
+    if color == 0:
+        fbuf.fill(1)
+    fbuf.text(message, 0, 0, color)
+    if center:
+        msgWidth = len(message) * LETTER_WIDTH
+        if msgWidth > CANVAS_WIDTH:
+            raise Exception('Message overflow')
+        x = int((width - msgWidth) / 2)
+    oled.blit(fbuf, x, y)
+    
+    
+
+PlayIntro = True #True by default, but during Dev, turning it False is nice
+
+
+if PlayIntro:
+    #Display the intro logo and play the startup song    
+    logo = Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/beeAndPuppycat') #default once through animation of the beeAndPuppycat bitmap stored under the assets folder
+    logo.splash(oled, sleep_time=0) #immediately draw to screen with no dealy after.  Music plays blocking anything else from being drawn until the music stops.
+    while beeThemeSong.tick(): #Play song until finished
+        sleep(0.04)
+
+clear()
+showTextXY(oled, message="I'm Glyphy", x=110, y=30, width=CANVAS_WIDTH, height=8, center=True, color=1 )
+oled.show()
+sleep(1)
+clear()
 
 #Set hunger and bathroom timers and callbacks
 def goPotty(var):
@@ -113,12 +146,12 @@ def getHungry(var):
     energy-=1
 
 oneHour = 60*60*1000
-potty_timer = Timer(mode=Timer.PERIODIC, period=oneHour, callback=goPotty)
+potty_timer = Timer(mode=Timer.PERIODIC, period=oneHour, callback=goPotty)  #when the timer is up the function "goPotty" gets called ->callback=goPotty
 hunger_timer = Timer(mode=Timer.PERIODIC, period=oneHour, callback=getHungry)
 
 #Create Icons
 Icons = OrderedDict([
-    #('pretty_patrick', Icon('assets/pretty_patrick.pbm', name = 'pretty_patrick')),
+    ('pretty_patrick', Icon('assets/pretty_patrick.pbm', name = 'pretty_patrick')),  #name in the dictionary, then an Icon given an image path and name to reference it by
     ('race_track', Icon('assets/race_track.pbm', name = 'race_track')),
     ('food', Icon('assets/big_meat.pbm', name = 'food')),
     ('book', Icon('assets/book.pbm', name='book')),
@@ -134,11 +167,7 @@ Icons = OrderedDict([
 ])
 
 icon_count = len(Icons)
-star = Icon('assets/star.pbm', name = 'star')
-
-def clear():
-    """ Clear the screen """
-    oled.fill_rect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT,0)
+star = Icon('assets/star.pbm', name = 'star')  #star is used in other contexts and is defined separately here to be used later.
 
 def build_toolbar():
     toolbar = Toolbar()
@@ -149,13 +178,15 @@ def build_toolbar():
     return toolbar        
         
 tb = build_toolbar()
+
+#animations, some are a single cell
 krabs =           Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/puppyCatEat', animation_type='loop')
 bee =             Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/beeFull', animation_type='loop')
 puppycat =        Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/puppycatFull', animation_type='loop')
 toast =           Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/toastFull', animation_type='loop')
 starBunny =       Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/beeFull', animation_type='loop') #TODO: change beeFull to bunnyStar image
 narb =            Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/narb', animation_type='loop')
-puppyCatEat =     Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/puppyCatEat', animation_type='loop') #TODO: forgetting to add loop in init will cause animations to run without end, throw error
+puppyCatEat =     Animate(x=0, y=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, filename='assets/puppyCatEat', animation_type='loop') #Calling loop() with no arg or -1 will cause it to run until Stop is called.
 eat =             Animate(x=48, y=SPRITE_SIZE, width=48, height=48, filename = 'assets/eat')
 baby =            Animate(x=48, y=SPRITE_SIZE, width=48, height=48, filename = 'assets/puppy_bounce', animation_type='bounce')
 babyzzz =         Animate(x=48, y=SPRITE_SIZE, width=48, height=48, filename = 'assets/puppy_cat_zzz', animation_type='loop')
@@ -163,18 +194,6 @@ go_potty =        Animate(x=64, y=SPRITE_SIZE, width=48, height=48, filename = '
 poopy =           Animate(x=96, y=48, width=SPRITE_SIZE, height=SPRITE_SIZE, filename='assets/poop')
 death =           Animate(x=40, y=SPRITE_SIZE, width=SPRITE_SIZE, height=SPRITE_SIZE, filename='assets/skull', animation_type='bounce')
 dark_heart =      Animate(x=40, y=0, width=48, height=64, filename='assets/dark_heart', animation_type='loop')
-
-def showTextXY(oled, message='', x=110, y=0, width=CANVAS_WIDTH, height=8, center=None, color=1):
-    fbuf = framebuf.FrameBuffer(bytearray(width*height), width, height, framebuf.MONO_HLSB)
-    if color == 0:
-        fbuf.fill(1)
-    fbuf.text(message, 0, 0, color)
-    if center:
-        msgWidth = len(message) * LETTER_WIDTH
-        if msgWidth > CANVAS_WIDTH:
-            raise Exception('Message overflow')
-        x = int((width - msgWidth) / 2)
-    oled.blit(fbuf, x, y)
 
 def protoInputDrawLoop(oled):
     """Use callbacks to abstract input draw loop"""
@@ -197,6 +216,18 @@ def pretty_patrick(oled):
     water = Icon('assets/water.pbm', name = 'water', width=SPRITE_SIZE, height=SPRITE_SIZE)
     fire = Icon('assets/fire.pbm', name = 'fire', width=SPRITE_SIZE, height=SPRITE_SIZE)
     air = Icon('assets/air.pbm', name = 'air', width=SPRITE_SIZE, height=SPRITE_SIZE)
+    prettyToolbar = Toolbar()
+    prettyToolbar.spacer = SPACER
+    for item in [water, fire, air]:
+        prettyToolbar.additem(item)
+#TODO:Keep trying.  Need to define vert format
+    prettyToolbar.show(oled, 0)
+    oled.show()
+    sleep(1)
+    oled.show()
+    sleep(0.05)
+    clear()
+    
     pan_width = 55
     pan_height = 23
     pan = Icon('assets/pan.pbm', name ='pan', x=42, y=33, width=pan_width, height=pan_height)
@@ -253,7 +284,7 @@ def pretty_patrick(oled):
         if egg_3_y >= egg_max_height or egg_3_y <= egg_min_height:
             egg_3_dir *= -1
         
-            
+        #TODO: Limit animation width of fire and steam to prevent redrawing these 
         #gap of 4 between each on right side
         water.show(oled, CANVAS_WIDTH - SPRITE_SIZE, 4)
         fire.show(oled, CANVAS_WIDTH - SPRITE_SIZE, 24)
@@ -395,7 +426,7 @@ def race_track(oled):
         bee_cycle_blk.show(oled, bee_x_pos, bee_lanes[lane_index], key=1) # Bulk of shape is black, so start by putting down the silloutte
         bee_cycle_wht.show(oled, bee_x_pos, bee_lanes[lane_index], key=0)
         showTextXY(oled, str(score))
-        oled.show()
+        oled.show() #needs to be called after all the calls to "show" are complete.  This finally updates the display to the new image
         sleep(0.05)
         clear()
 
@@ -554,7 +585,7 @@ def darkHeartGame():
         if button_b.is_pressed:
             buzz.b()
             krabs.load()
-            woeIsMeSong = music(songs.woeIsMe, looping = False, pin = buzzer_pin, tempo = 1, duty=volume)
+            woeIsMeSong = music(songs.woeIsMe, looping = False, pin = buzzer_pin, tempo = 1, duty=volume)#TODO: test if this initialization is needed, seems to be a repeat
             krabs.loop(no = 4)
             while woeIsMeSong.tick():
                 if not krabs.done:
@@ -792,5 +823,4 @@ while True:
     tb.show(oled, offset)
     oled.show()
     sleep(0.05)
-
 
