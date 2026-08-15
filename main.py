@@ -94,7 +94,7 @@ DEBUG  = True #Shows debug messages on the Serial Monitor
 #TODO: Additional code clean up passes
 
 oled.init_display()
-oled.rotate(True)  #Toggle this to True or False (capitalization matters here) if your screen appears upside down.
+oled.rotate(False)  #Toggle this to True or False (capitalization matters here) if your screen appears upside down.
 
 def clear():
     """ Clear the screen
@@ -115,6 +115,8 @@ def showTextXY(oled, message='', x=110, y=0, width=CANVAS_WIDTH, height=8, cente
     oled.blit(fbuf, x, y)
     
     
+beeThemeSong = music(songs.beeTheme, looping = False, pin = buzzer_pin, tempo = 2, duty=volume) #default tempo=3=slow; tempo=2 is usually right
+woeIsMeSong = music(songs.woeIsMe, looping = False, pin = buzzer_pin, tempo = 1, duty=volume)
 
 PlayIntro = True #True by default, but during Dev, turning it False is nice
 
@@ -125,12 +127,6 @@ if PlayIntro:
     logo.splash(oled, sleep_time=0) #immediately draw to screen with no dealy after.  Music plays blocking anything else from being drawn until the music stops.
     while beeThemeSong.tick(): #Play song until finished
         sleep(0.04)
-
-clear()
-showTextXY(oled, message="I'm Glyphy", x=110, y=30, width=CANVAS_WIDTH, height=8, center=True, color=1 )
-oled.show()
-sleep(1)
-clear()
 
 #Set hunger and bathroom timers and callbacks
 def goPotty(var):
@@ -151,19 +147,20 @@ hunger_timer = Timer(mode=Timer.PERIODIC, period=oneHour, callback=getHungry)
 
 #Create Icons
 Icons = OrderedDict([
-    ('pretty_patrick', Icon('assets/pretty_patrick.pbm', name = 'pretty_patrick')),  #name in the dictionary, then an Icon given an image path and name to reference it by
-    ('race_track', Icon('assets/race_track.pbm', name = 'race_track')),
-    ('food', Icon('assets/big_meat.pbm', name = 'food')),
-    ('book', Icon('assets/book.pbm', name='book')),
-    ('heart_plus', Icon('assets/heart.pbm', name = 'heart_plus')),
+    ('food', Icon('assets/big_meat.pbm', name = 'food')), # (name in the dictionary, then an Icon given an image path and name to reference it by)
     ('lightbulb', Icon('assets/lightbulb.pbm', name = 'lightbulb')),
-    ('game', Icon('assets/star.pbm', name = 'game')),
-    ('firstaid', Icon('assets/firstaid.pbm', name = 'firstaid')),
     ('toilet', Icon('assets/toilet.pbm', name = 'toilet')),
+    ('race_track', Icon('assets/race_track.pbm', name = 'race_track')),
+    ('book', Icon('assets/book.pbm', name='book')),
+    ('game', Icon('assets/star.pbm', name = 'game')),
     ('heart', Icon('assets/heart.pbm', name = 'heart')),
+    ('firstaid', Icon('assets/firstaid.pbm', name = 'firstaid')),
     ('toast_icon', Icon('assets/toast.pbm', name = 'toast_icon')),
     ('bee_icon', Icon('assets/bee.pbm', name = 'bee_icon')),
     ('crab', Icon('assets/crab.pbm', name ='crab'))
+    #('heart_plus', Icon('assets/heart.pbm', name = 'heart_plus')),
+    #('pretty_patrick', Icon('assets/pretty_patrick.pbm', name = 'pretty_patrick')),
+
 ])
 
 icon_count = len(Icons)
@@ -657,18 +654,7 @@ go_potty.set = True #set the flag to show the potty animation
 poopy.set = False #set the poopy as not visible
 go_potty.load() #load the resources for go_potty
 
-beeThemeSong = music(songs.beeTheme, looping = False, pin = buzzer_pin, tempo = 2, duty=volume) #default tempo=3=slow; tempo=2 is usually right
-woeIsMeSong = music(songs.woeIsMe, looping = False, pin = buzzer_pin, tempo = 1, duty=volume)
-
 buzz = buzzer(pin=buzzer_pin, duty=volume)
-
-
-#Display the intro logo and play the startup song
-logo.splash(oled, sleep_time=0)
-while beeThemeSong.tick(): #Play song until finished
-    sleep(0.04)
-clear()
-
 
 #main loop after everything else has been defined and established
 while True:
@@ -777,9 +763,9 @@ while True:
         if (tb.selected_item == 'race_track' and index >= 0): #TODO: find a better fix for this than checking index set after cancel
             race_track(oled)
             clear()
-   #     if (tb.selected_item == 'pretty_patrick' and index >= 0): #TODO: find a better fix for this than checking index set after cancel
-   #         pretty_patrick(oled)
-   #         clear()
+        if (tb.selected_item == 'pretty_patrick' and index >= 0): #TODO: find a better fix for this than checking index set after cancel
+            pretty_patrick(oled)
+            clear()
     if poopy.set:
         poopy.load()
         poopy.animate(oled)        
@@ -823,4 +809,6 @@ while True:
     tb.show(oled, offset)
     oled.show()
     sleep(0.05)
+
+
 
